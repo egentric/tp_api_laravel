@@ -6,6 +6,7 @@ use App\Models\Producer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\Label;
 
 class ProducerController extends Controller
 {
@@ -16,12 +17,12 @@ class ProducerController extends Controller
     {
         // On récupère tous les joueurs
         $players = DB::table('producers')
-            ->join('categories','categories.id', '=', 'producers.category_id' )
+            ->join('categories', 'categories.id', '=', 'producers.category_id')
 
-            ->join('producers_labels', 'producers_labels.producers_id', '=', 'producers.id')
-            ->join('labels', 'labels.id', '=', 'producers_labels.labels_id')
-            ->select('producers.*', 'labels.labelName as label_name', 'labels.labelPisture as label_picture')
-            
+            ->join('label_producer', 'label_producer.producer_id', '=', 'producers.id')
+            ->join('labels', 'labels.id', '=', 'label_producer.label_id')
+            ->select('producers.*', 'labels.labelName as label_name', 'labels.labelPicture as label_picture')
+
             ->get()
             ->toArray();
         // On retourne les informations des utilisateurs en JSON
@@ -50,17 +51,17 @@ class ProducerController extends Controller
 
         $filename = "";
         if ($request->hasFile('picture')) {
-        // On récupère le nom du fichier avec son extension, résultat $filenameWithExt : "jeanmiche.jpg"
-        $filenameWithExt = $request->file('picture')->getClientOriginalName();
-        $filenameWithoutExt = pathinfo($filenameWithExt, PATHINFO_FILENAME);
-        // On récupère l'extension du fichier, résultat $extension : ".jpg"
-        $extension = $request->file('picture')->getClientOriginalExtension();
-        // On créer un nouveau fichier avec le nom + une date + l'extension, résultat $fileNameToStore :"jeanmiche_20220422.jpg"
-        $filename = $filenameWithoutExt . '_' . time() . '.' . $extension;
-        // On enregistre le fichier à la racine /storage/app/public/uploads, ici la méthode storeAs défini déjà le chemin /storage/app
-        $path = $request->file('picture')->storeAs('public/uploads', $filename);
+            // On récupère le nom du fichier avec son extension, résultat $filenameWithExt : "jeanmiche.jpg"
+            $filenameWithExt = $request->file('picture')->getClientOriginalName();
+            $filenameWithoutExt = pathinfo($filenameWithExt, PATHINFO_FILENAME);
+            // On récupère l'extension du fichier, résultat $extension : ".jpg"
+            $extension = $request->file('picture')->getClientOriginalExtension();
+            // On créer un nouveau fichier avec le nom + une date + l'extension, résultat $fileNameToStore :"jeanmiche_20220422.jpg"
+            $filename = $filenameWithoutExt . '_' . time() . '.' . $extension;
+            // On enregistre le fichier à la racine /storage/app/public/uploads, ici la méthode storeAs défini déjà le chemin /storage/app
+            $path = $request->file('picture')->storeAs('public/uploads', $filename);
         } else {
-        $filename = Null;
+            $filename = Null;
         }
 
 
@@ -78,7 +79,30 @@ class ProducerController extends Controller
             'category_id' => $request->category_id
 
         ]);
-        // On retourne les informations du nouvel utilisateur en JSON
+
+        // table pivot label_producer //
+
+        //On récupère l'ID du label à associer au producteur depuis la requête POST.
+        // On utilise un tableau ici pour pouvoir associer plusieurs labels à un même producteur.        
+        $producersLabels[] = $request->label_id;
+        // Ensuite, le code vérifie si le tableau n'est pas vide avant de continuer.
+        // Si le tableau est vide, cela signifie qu'aucun label n'a été sélectionné,
+        // donc il n'y a pas de relation à créer.        
+        if (!empty($producersLabels)) {
+            // Si le tableau n'est pas vide, on boucle pour parcourir tous les labels associés au producteur.
+            // Dans cette boucle, on récupère chaque label à partir de son ID.
+
+            for ($i = 0; $i < count($producersLabels); $i++) {
+                $producersLabels = Label::find($producersLabels[$i]);
+                // on crée la relation many-to-many entre le producteur et le label en utilisant la méthode attach()
+                // sur le modèle du producteur. Cette méthode ajoute une nouvelle entrée dans la table pivot,
+                // qui lie le producteur au label correspondant.
+                $producer->label()->attach($producersLabels);
+            }
+        }
+
+
+        // On retourne les informations du nouvel producteur en JSON
         return response()->json([
             'status' => 'Success',
             'data' => $producer,
@@ -90,7 +114,7 @@ class ProducerController extends Controller
      */
     public function show(Producer $producer)
     {
-        // On retourne les informations de l'utilisateur en JSON
+        // On retourne les informations du producteur en JSON
         return response()->json($producer);
     }
 
@@ -114,17 +138,17 @@ class ProducerController extends Controller
 
         $filename = "";
         if ($request->hasFile('picture')) {
-        // On récupère le nom du fichier avec son extension, résultat $filenameWithExt : "jeanmiche.jpg"
-        $filenameWithExt = $request->file('picture')->getClientOriginalName();
-        $filenameWithoutExt = pathinfo($filenameWithExt, PATHINFO_FILENAME);
-        // On récupère l'extension du fichier, résultat $extension : ".jpg"
-        $extension = $request->file('picture')->getClientOriginalExtension();
-        // On créer un nouveau fichier avec le nom + une date + l'extension, résultat $fileNameToStore :"jeanmiche_20220422.jpg"
-        $filename = $filenameWithoutExt . '_' . time() . '.' . $extension;
-        // On enregistre le fichier à la racine /storage/app/public/uploads, ici la méthode storeAs défini déjà le chemin /storage/app
-        $path = $request->file('picture')->storeAs('public/uploads', $filename);
+            // On récupère le nom du fichier avec son extension, résultat $filenameWithExt : "jeanmiche.jpg"
+            $filenameWithExt = $request->file('picture')->getClientOriginalName();
+            $filenameWithoutExt = pathinfo($filenameWithExt, PATHINFO_FILENAME);
+            // On récupère l'extension du fichier, résultat $extension : ".jpg"
+            $extension = $request->file('picture')->getClientOriginalExtension();
+            // On créer un nouveau fichier avec le nom + une date + l'extension, résultat $fileNameToStore :"jeanmiche_20220422.jpg"
+            $filename = $filenameWithoutExt . '_' . time() . '.' . $extension;
+            // On enregistre le fichier à la racine /storage/app/public/uploads, ici la méthode storeAs défini déjà le chemin /storage/app
+            $path = $request->file('picture')->storeAs('public/uploads', $filename);
         } else {
-        $filename = Null;
+            $filename = Null;
         }
 
 
@@ -139,9 +163,30 @@ class ProducerController extends Controller
             'description' => $request->description,
             'picture' => $filename,
             'category_id' => $request->category_id
-
-
         ]);
+
+        // table pivot label_producer //
+
+        // //On récupère l'ID du label à associer au producteur depuis la requête POST.
+        // // On utilise un tableau ici pour pouvoir associer plusieurs labels à un même producteur.        
+        // $producersLabels[] = $request->label_id;
+        // // Ensuite, le code vérifie si le tableau n'est pas vide avant de continuer.
+        // // Si le tableau est vide, cela signifie qu'aucun label n'a été sélectionné,
+        // // donc il n'y a pas de relation à créer.        
+        // if (!empty($producersLabels)) {
+        //     // Si le tableau n'est pas vide, on boucle pour parcourir tous les labels associés au producteur.
+        //     // Dans cette boucle, on récupère chaque label à partir de son ID.
+        //     for ($i = 0; $i < count($producersLabels); $i++) {
+        //         $producersLabels = Producer::find($producersLabels[$i]);
+        //         // on crée la relation many-to-many entre le producteur et le label en utilisant la méthode attach()
+        //         // sur le modèle du producteur. Cette méthode ajoute une nouvelle entrée dans la table pivot,
+        //         // qui lie le producteur au label correspondant.
+        //         $producer->label()->attach($producersLabels);
+        //     }
+        // }
+
+
+
         return response()->json([
             'status' => 'Mise à jour avec succèss',
         ]);

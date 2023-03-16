@@ -11,13 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('producers_labels', function (Blueprint $table) {
-            $table->bigInteger('producers_id')->unsigned()->nullable();
-            $table->foreign('producers_id')
+        //Attention la table doit etre écrit dans ce sens label_producer et sans les s
+        Schema::create('label_producer', function (Blueprint $table) {
+            // Attention pas de s à producer_id
+            $table->bigInteger('producer_id')->unsigned()->nullable();
+            $table->foreign('producer_id')
                     ->references('id')
                     ->on('producers');
-            $table->bigInteger('labels_id')->unsigned()->nullable();
-            $table->foreign('labels_id')
+
+            // Attention pas de s à label_id        
+            $table->bigInteger('label_id')->unsigned()->nullable();
+            $table->foreign('label_id')
                     ->references('id')
                     ->on('labels');
             $table->id();
@@ -31,6 +35,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('producers_labels');
+        Schema::dropIfExists('label_producer');
     }
 };

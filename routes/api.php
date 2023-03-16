@@ -32,20 +32,29 @@ Route::controller(AuthController::class)->group(function () {
 
 // Route::apiResource("categories", CategoryController::class);
 // Route::apiResource("labels", LabelController::class);
-Route::apiResource("producers", ProducerController::class);
+// Route::apiResource("producers", ProducerController::class);
 
 Route::controller(labelController::class)->group(function () {
     Route::get('labels', 'index');
     Route::post('labels', 'store');
-    Route::get('labels/{labels}', 'show');
-    Route::post('labels/{labels}', 'update');
-    Route::delete('labels/{labels}', 'destroy');
+    Route::get('labels/{label}', 'show');
+    Route::post('labels/{label}', 'update');
+    Route::delete('labels/{label}', 'destroy');
 });
     Route::controller(CategoryController::class)->group(function () {
         Route::get('categories', 'index');
         Route::post('categories', 'store');
-        Route::get('categories/{categories}', 'show');
-        Route::post('categories/{categories}', 'update');
-        Route::delete('categories/{categories}', 'destroy');
+        Route::get('categories/{category}', 'show');
+        Route::put('categories/{category}', 'update');
+        Route::delete('categories/{category}', 'destroy');
     
+});
+
+Route::controller(ProducerController::class)->group(function () {
+    Route::get('producers', 'index');
+    Route::post('producers', 'store');
+    Route::get('producers/{producer}', 'show');
+    Route::post('producers/{producer}', 'update');
+    Route::delete('producers/{producer}', 'destroy');
+
 });

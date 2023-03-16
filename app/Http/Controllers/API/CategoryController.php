@@ -35,7 +35,7 @@ class CategoryController extends Controller
         ]);
         // On crée un nouvel utilisateur
         $category = Category::create([
-            'categorytName' => $request->categorytName,
+            'categoryName' => $request->categoryName,
         ]);
         // On retourne les informations du nouvel utilisateur en JSON
         return response()->json([
@@ -47,7 +47,7 @@ class CategoryController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(category $category)
+    public function show(Category $category)
     {
         // On retourne les informations de l'utilisateur en JSON
         return response()->json($category);
@@ -56,15 +56,17 @@ class CategoryController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, category $category)
+    public function update(Request $request, Category $category)
     {
         $this->validate($request, [
             'categoryName' => 'required|max:100',
         ]);
-
+// dd($category);
         $category->update([
-            'categorytName' => $request->categorytName,
+            'categoryName' => $request->categoryName,
         ]);
+        
+        // dd($request->categoryName);
         return response()->json([
             'status' => 'Mise à jour avec succèss'
         ]);
@@ -73,7 +75,7 @@ class CategoryController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(category $category)
+    public function destroy(Category $category)
     {
         // On supprime l'utilisateur
         $category->delete();
