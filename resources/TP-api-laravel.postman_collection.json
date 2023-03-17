@@ -145,7 +145,7 @@
 								},
 								{
 									"key": "category_id",
-									"value": "1",
+									"value": "2",
 									"type": "text"
 								},
 								{
@@ -156,6 +156,11 @@
 								{
 									"key": "label_id[]",
 									"value": "5",
+									"type": "text"
+								},
+								{
+									"key": "label_id[]",
+									"value": "1",
 									"type": "text"
 								}
 							]
@@ -275,16 +280,72 @@
 						"method": "POST",
 						"header": [],
 						"body": {
-							"mode": "raw",
-							"raw": "{\r\n        \"firstName\": \"bibi\",\r\n        \"lastName\": \"boss\",\r\n        \"email\": \"infogentric@gmail.com\",\r\n        \"phone\": \"06 60 39 67 02\",\r\n        \"address\": \"4 la touche au robin2\",\r\n        \"zip\": \"44530\",\r\n        \"city\": \"Guenrouet2\",\r\n        \"description\": \"description blablabla2\",\r\n        \"picture\": \"Capture d'écran_20230211_095808_1678976896.png\",\r\n        \"category_id\": \"2\",\r\n        \"label_id[]\" : \"5\"\r\n    }",
-							"options": {
-								"raw": {
-									"language": "json"
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "firstName",
+									"value": "bob",
+									"type": "text"
+								},
+								{
+									"key": "lastName",
+									"value": "boob",
+									"type": "text"
+								},
+								{
+									"key": "email",
+									"value": "infogentric@gmail.com",
+									"type": "text"
+								},
+								{
+									"key": "phone",
+									"value": "06 60 39 67 02",
+									"type": "text"
+								},
+								{
+									"key": "address",
+									"value": "4 la touche",
+									"type": "text"
+								},
+								{
+									"key": "zip",
+									"value": "44530",
+									"type": "text"
+								},
+								{
+									"key": "city",
+									"value": "Guenrouet",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "blablabla",
+									"type": "text"
+								},
+								{
+									"key": "picture",
+									"type": "file",
+									"src": "/C:/Users/infog/Pictures/Screenshots/Capture d'écran_20230211_095808.png"
+								},
+								{
+									"key": "category_id",
+									"value": "2",
+									"type": "text"
+								},
+								{
+									"key": "label_id[]",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "label_id[]",
+									"value": "5",
+									"type": "text"
 								}
-							}
+							]
 						},
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/producers/4",
+							"raw": "http://127.0.0.1:8000/api/producers/38",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -296,7 +357,7 @@
 							"path": [
 								"api",
 								"producers",
-								"4"
+								"38"
 							]
 						}
 					},
