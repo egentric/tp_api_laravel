@@ -13,6 +13,7 @@ class Producer extends Model
 
 public function label()
 {
+    //Relation many to many avec labels
     return $this->belongsToMany('App\Models\Label');
 }
 }

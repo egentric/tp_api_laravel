@@ -12,6 +12,7 @@ class category extends Model
 
     public function category()
     {
+        // Relation one to many
     return $this->hasMany(category::class);
     }
 }

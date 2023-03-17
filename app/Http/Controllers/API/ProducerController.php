@@ -15,16 +15,26 @@ class ProducerController extends Controller
      */
     public function index()
     {
-        // On récupère tous les joueurs
+
+        //Ce code n'affiche que les producteurs présent dans la table Pivot
+
+        // On récupère tous les producteurs
         $players = DB::table('producers')
+            // On y join la table categories
             ->join('categories', 'categories.id', '=', 'producers.category_id')
 
+            // On y join la table label_producer
             ->join('label_producer', 'label_producer.producer_id', '=', 'producers.id')
+            // On y join la table labels
             ->join('labels', 'labels.id', '=', 'label_producer.label_id')
+            // On sélectionne les colonnes du producteurs et on les renommes
             ->select('producers.*', 'labels.labelName as label_name', 'labels.labelPicture as label_picture')
 
+            // On récupère sous forme de tableau
             ->get()
+            // On le transforme en tableau PHP
             ->toArray();
+
         // On retourne les informations des utilisateurs en JSON
         return response()->json([
             'status' => 'Success',
@@ -65,7 +75,7 @@ class ProducerController extends Controller
         }
 
 
-        // On crée un nouvel utilisateur
+        // On crée un nouveau producteur
         $producer = Producer::create([
             'firstName' => $request->firstName,
             'lastName' => $request->lastName,
@@ -80,29 +90,26 @@ class ProducerController extends Controller
 
         ]);
 
-        // table pivot label_producer //
+        // // table pivot label_producer // //
 
-        //On récupère l'ID du label à associer au producteur depuis la requête POST.
-        // On utilise un tableau ici pour pouvoir associer plusieurs labels à un même producteur.        
-        $producersLabels[] = $request->label_id;
-        // Ensuite, le code vérifie si le tableau n'est pas vide avant de continuer.
-        // Si le tableau est vide, cela signifie qu'aucun label n'a été sélectionné,
-        // donc il n'y a pas de relation à créer.        
-        if (!empty($producersLabels)) {
-            // Si le tableau n'est pas vide, on boucle pour parcourir tous les labels associés au producteur.
-            // Dans cette boucle, on récupère chaque label à partir de son ID.
-
-            for ($i = 0; $i < count($producersLabels); $i++) {
-                $producersLabels = Label::find($producersLabels[$i]);
-                // on crée la relation many-to-many entre le producteur et le label en utilisant la méthode attach()
-                // sur le modèle du producteur. Cette méthode ajoute une nouvelle entrée dans la table pivot,
-                // qui lie le producteur au label correspondant.
-                $producer->label()->attach($producersLabels);
+        // Cette ligne de code ajoute l'ID du label envoyé dans la requête dans un tableau $producersLabelIds.
+        // Cela vous permettra de récupérer tous les ID des labels sélectionnés pour le producteur       
+        $producersLabelIds[] = $request->label_id;
+        // Cette condition vérifie si le tableau $producersLabelIds n'est pas vide avant de poursuivre le traitement.
+        //  Cela permet d'éviter d'exécuter le code inutilement si aucun label n'a été envoyé dans la requête.        
+        if (!empty($producersLabelIds)) {
+            // Cette boucle foreach itère sur chaque ID de label présent dans le tableau $producersLabelIds.
+            foreach ($producersLabelIds as $labelId) {
+                // Cette ligne de code récupère le modèle Label correspondant à l'ID du label de la boucle en utilisant la méthode find().
+                //  Cette méthode recherche un enregistrement dans la table labels qui a l'ID spécifié et renvoie un objet Label correspondant.
+                $label = Label::find($labelId);
+                // Cette ligne de code utilise la méthode attach() sur la relation ManyToMany entre Producer et Label pour ajouter le label
+                //  récupéré précédemment au producteur que vous voulez mettre à jour.
+                $producer->label()->attach($label);
             }
         }
-
-
-        // On retourne les informations du nouvel producteur en JSON
+        
+        // On retourne les informations du nouveau producteur en JSON
         return response()->json([
             'status' => 'Success',
             'data' => $producer,
@@ -132,7 +139,6 @@ class ProducerController extends Controller
             'zip' => 'required|max:15',
             'city' => 'required|max:100',
             'description' => 'required',
-            // 'picture' => 'required|max:100',
 
         ]);
 
@@ -165,25 +171,27 @@ class ProducerController extends Controller
             'category_id' => $request->category_id
         ]);
 
-        // table pivot label_producer //
+        // création d'un tableau vide $updateProdId pour stocker les identifiants des modèles Label
+        // qui seront utilisés pour la mise à jour des relations.
+        $updateProdId = array();
 
-        // //On récupère l'ID du label à associer au producteur depuis la requête POST.
-        // // On utilise un tableau ici pour pouvoir associer plusieurs labels à un même producteur.        
-        // $producersLabels[] = $request->label_id;
-        // // Ensuite, le code vérifie si le tableau n'est pas vide avant de continuer.
-        // // Si le tableau est vide, cela signifie qu'aucun label n'a été sélectionné,
-        // // donc il n'y a pas de relation à créer.        
-        // if (!empty($producersLabels)) {
-        //     // Si le tableau n'est pas vide, on boucle pour parcourir tous les labels associés au producteur.
-        //     // Dans cette boucle, on récupère chaque label à partir de son ID.
-        //     for ($i = 0; $i < count($producersLabels); $i++) {
-        //         $producersLabels = Producer::find($producersLabels[$i]);
-        //         // on crée la relation many-to-many entre le producteur et le label en utilisant la méthode attach()
-        //         // sur le modèle du producteur. Cette méthode ajoute une nouvelle entrée dans la table pivot,
-        //         // qui lie le producteur au label correspondant.
-        //         $producer->label()->attach($producersLabels);
-        //     }
-        // }
+        // // table pivot label_producer // //
+
+        // récupèration des identifiants des modèles Label à partir de la requête HTTP : $producersLabelId= $request->label_id;.
+        $producersLabelId= $request->label_id;
+        // on vérifie que le tableau $producersLabelId n'est pas vide,
+        if (!empty($producersLabelId)) {
+            // puis pour chaque identifiant dans le tableau, on récupère le modèle Label correspondant en utilisant la méthode find() 
+            for ($i = 0; $i < count($producersLabelId); $i++) {
+                $label = Label::find($producersLabelId[$i]);
+                // on ajoute son identifiant au tableau $updateProdId en utilisant la fonction array_push().
+                array_push($updateProdId, $label->id);
+            }
+            // on appelle la méthode sync() sur la relation label du modèle Producer en passant le tableau $updateProdId comme argument,
+            //  ce qui mettra à jour les relations en supprimant toutes les entrées pivot existantes et
+            //  en insérant de nouvelles entrées pour les identifiants de modèles Label fournis.
+            $producer->label()->sync($updateProdId);
+        }
 
 
 
@@ -197,6 +205,8 @@ class ProducerController extends Controller
      */
     public function destroy(Producer $producer)
     {
+        // On supprime tous les enregistrements associés dans la table pivot
+        $producer->label()->detach();
         // On supprime l'utilisateur
         $producer->delete();
         // On retourne la réponse JSON
